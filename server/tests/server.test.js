@@ -143,45 +143,21 @@ describe('GET /myproperties', () => {
   });
 });
 
-// describe('GET /todos', () => {
-//   it('should get all todos', done => {
-//     request(app)
-//       .get('/todos')
-//       .set('x-auth', users[0].tokens[0].token)
-//       .expect(200)
-//       .expect(res => {
-//         expect(res.body.todos.length).toBe(1)
-//       })
-//       .end(done);
-//   });
-// });
-
-describe('GET /todos/:id', () => {
-
-  it('should return a todo doc', done => {
+describe('GET /properties/:id', () => {
+  it('should return a property', done => {
     request(app)
-      .get(`/todos/${todos[0]._id.toHexString()}`)
-      .set('x-auth', users[0].tokens[0].token)
+      .get(`/properties/${properties[0]._id.toHexString()}`)
       .expect(200)
       .expect(res => {
-        expect(res.body.todo.text).toBe(todos[0].text);
+        expect(res.body.property.title).toBe(properties[0].title);
       })
       .end(done);
   });
 
-  it('should not return a todo doc created by other user', done => {
-    request(app)
-      .get(`/todos/${todos[1]._id.toHexString()}`)
-      .set('x-auth', users[0].tokens[0].token)
-      .expect(404)
-      .end(done);
-  });
-
-  it('should return a 404 if todo not found', done => {
+  it('should return a 404 if property was not found', done => {
     const id = new ObjectID().toHexString();
     request(app)
-      .get(`/todos/${id}`)
-      .set('x-auth', users[0].tokens[0].token)
+      .get(`/properties/${id}`)
       .expect(404)
       .end(done);
   });
@@ -189,60 +165,58 @@ describe('GET /todos/:id', () => {
   it('it should return 404 for invalid object ids', done => {
     request(app)
       .get('/todos/123abc')
-      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });
-
 });
 
-describe('DELETE /todos/:id', () => {
+describe('DELETE /properies/:id', () => {
 
-  it('should remove a todo', done => {
-    const hexId = todos[1]._id.toHexString();
+  it('should remove a property', done => {
+    const hexId = properties[1]._id.toHexString();
 
     request(app)
-      .delete(`/todos/${hexId}`)
+      .delete(`/properties/${hexId}`)
       .set('x-auth', users[1].tokens[0].token)
       .expect(200)
       .expect(res => {
-        expect(res.body.todo._id).toBe(hexId);
+        expect(res.body.property._id).toBe(hexId);
       })
       .end((err, res) => {
         if (err) return done(err);
         //atempt to find the deleted item by id
-        Todo.findById(hexId)
-          .then(todo => {
-            expect(todo).toNotExist();
+        Property.findById(hexId)
+          .then(property => {
+            expect(property).toNotExist();
             done();
           })
           .catch(e => done(e));
       });
   });
 
-  it('should not remove a todo created by another user', done => {
-    const hexId = todos[0]._id.toHexString();
+  it('should not remove a property created by another user', done => {
+    const hexId = properties[0]._id.toHexString();
 
     request(app)
-      .delete(`/todos/${hexId}`)
+      .delete(`/properties/${hexId}`)
       .set('x-auth', users[1].tokens[0].token)
       .expect(404)
       .end((err, res) => {
         if (err) return done(err);
         //atempt to find the deleted item by id
-        Todo.findById(hexId)
-          .then(todo => {
-            expect(todo).toExist();
+        Property.findById(hexId)
+          .then(property => {
+            expect(property).toExist();
             done();
           })
           .catch(e => done(e));
       });
   });
 
-  it('should return 404 if todo not found', done => {
+  it('should return 404 if property was not found', done => {
     const hexId = new ObjectID().toHexString();
     request(app)
-      .delete(`/todos/${hexId} + 1`)
+      .delete(`/properties/${hexId}`)
       .set('x-auth', users[1].tokens[0].token)
       .expect(404)
       .end(done)
@@ -257,6 +231,68 @@ describe('DELETE /todos/:id', () => {
   });
 
 });
+
+// describe('DELETE /todos/:id', () => {
+
+//   it('should remove a todo', done => {
+//     const hexId = todos[1]._id.toHexString();
+
+//     request(app)
+//       .delete(`/todos/${hexId}`)
+//       .set('x-auth', users[1].tokens[0].token)
+//       .expect(200)
+//       .expect(res => {
+//         expect(res.body.todo._id).toBe(hexId);
+//       })
+//       .end((err, res) => {
+//         if (err) return done(err);
+//         //atempt to find the deleted item by id
+//         Todo.findById(hexId)
+//           .then(todo => {
+//             expect(todo).toNotExist();
+//             done();
+//           })
+//           .catch(e => done(e));
+//       });
+//   });
+
+//   it('should not remove a todo created by another user', done => {
+//     const hexId = todos[0]._id.toHexString();
+
+//     request(app)
+//       .delete(`/todos/${hexId}`)
+//       .set('x-auth', users[1].tokens[0].token)
+//       .expect(404)
+//       .end((err, res) => {
+//         if (err) return done(err);
+//         //atempt to find the deleted item by id
+//         Todo.findById(hexId)
+//           .then(todo => {
+//             expect(todo).toExist();
+//             done();
+//           })
+//           .catch(e => done(e));
+//       });
+//   });
+
+//   it('should return 404 if todo not found', done => {
+//     const hexId = new ObjectID().toHexString();
+//     request(app)
+//       .delete(`/todos/${hexId} + 1`)
+//       .set('x-auth', users[1].tokens[0].token)
+//       .expect(404)
+//       .end(done)
+//   });
+
+//   it('should return 404 if object id is invalid', done => {
+//     request(app)
+//       .delete('/todos/123abc')
+//       .set('x-auth', users[1].tokens[0].token)
+//       .expect(404)
+//       .end(done);
+//   });
+
+// });
 
 describe('PATCH /todos/:id', () => {
 

@@ -61,37 +61,37 @@ app.get('/myproperties', authenticate, async (req, res) => {
   }
 });
 
-// Get Todo
-// app.get('/todos', authenticate, (req, res) => {
-//   Todo.find({ _creator: req.user._id})
-//     .then(todos => {
-//       res.send({ todos });
-//     })
-//     .catch(error => res.status(400).send(error));
-// });
-
-// Get a particular Todo item
-app.get('/todos/:id', authenticate, (req, res) => {
+// GET /properties/:id (Get a particular Property)
+app.get('/properties/:id', async (req, res) => {
+  // pill property id off the req.params
   const { id } = req.params;
+  // early return (not found) if id is not a valid id
   if (!ObjectID.isValid(id)) return res.status(404).send();
-  Todo.findOne({ _id: id, _creator: req.user._id })
-    .then(todo => {
-      // if id not found
-      if (!todo) return res.status(404).send();
-      res.send({ todo });
-    })
-    .catch(() => res.status(400).send());
-})
-
-// DELETE todos/:id
-app.delete('/todos/:id', authenticate, async (req, res) => {
-  const { id } = req.params;
-  if (!ObjectID.isValid(id)) return res.status(404).send();
-
   try {
-    const todo = await Todo.findOneAndRemove({ _id: id, _creator: req.user._id });
-    if (!todo) return res.status(404).send();
-    res.send({ todo });
+    // find property by the given id
+    const property = await Property.findById(id);
+    // if property with the given id doesn't exist, send not found
+    if (!property) return res.status(404).send();
+    // if property was found, send it to the client
+    res.send({ property });
+  } catch(e) {
+    res.status(400).send();
+  }
+});
+
+// DELETE properties/:id (Delete a property by id)
+app.delete('/properties/:id', authenticate, async (req, res) => {
+  // pill property id off the req.params
+  const { id } = req.params;
+  // early return (not found) if id is not a valid id
+  if (!ObjectID.isValid(id)) return res.status(404).send();
+  try {
+    // find property by the given id and the one that was created by the user
+    const property = await Property.findOneAndRemove({ _id: id, _creator: req.user._id });
+    // if property with the given id doesn't exist, send not found
+    if (!property) return res.status(404).send();
+    // if property was found, delete it and send it to the client
+    res.send({ property });
   } catch(e) {
     res.status(400).send();
   }
