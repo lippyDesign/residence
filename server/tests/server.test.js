@@ -71,7 +71,7 @@ describe('POST /properties', () => {
       });
   });
 
-  it(' should not create a new property if body incomplete', done => {
+  it('should not create a new property if body incomplete', done => {
     property.title = null
     request(app)
       .post('/properties')
@@ -94,65 +94,67 @@ describe('POST /properties', () => {
   });
 });
 
-// describe('POST, todos', () => {
-
-//   it('should create a new todo', done => {
-//     const text = 'test todo text';
-
-//     request(app)
-//       .post('/todos')
-//       .set('x-auth', users[0].tokens[0].token)
-//       .send({ text })
-//       .expect(200)
-//       .expect(res => {
-//         expect(res.body.text).toBe(text);
-//       })
-//       .end((err, res) => {
-//         if (err) return done(err);
-
-//         Todo.find({text})
-//           .then(todos => {
-//             expect(todos.length).toBe(1);
-//             expect(todos[0].text).toBe(text);
-//             done();
-//           })
-//           .catch(e => done(e));
-//       })
-//   });
-
-//   it('should not create todo with invalid body data', done => {
-//     const text = '';
-
-//     request(app)
-//       .post('/todos')
-//       .set('x-auth', users[0].tokens[0].token)
-//       .send({ text })
-//       .expect(400)
-//       .end((err, res) => {
-//         if (err) return done(err);
-
-//         Todo.find()
-//           .then(todos => {
-//             expect(todos.length).toBe(2);
-//             done();
-//           })
-//           .catch(e => done(e));
-//       });
-//   });
-// });
-
-describe('GET /todos', () => {
-  it('should get all todos', done => {
+describe('GET /properties', () => {
+  it('should get all properties', done => {
     request(app)
-      .get('/todos')
-      .set('x-auth', users[0].tokens[0].token)
+      .get('/properties')
       .expect(200)
       .expect(res => {
-        expect(res.body.todos.length).toBe(1)
+        expect(res.body.properties.length).toBe(2);
+        expect(res.body.properties[0].title).toBe(properties[0].title);
+        expect(res.body.properties[1].description).toBe(properties[1].description);
       })
       .end(done);
   });
 });
+
+describe('GET /myproperties', () => {
+  it('should get all properties created by the user', done => {
+    request(app)
+      .get('/myproperties')
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(200)
+      .expect(res => {
+        expect(res.body.properties.length).toBe(1);
+        expect(res.body.properties[0].title).toBe(properties[0].title);
+      })
+      .end(done);
+  });
+
+  it('should not get properties created by someone else', done => {
+    request(app)
+      .get('/myproperties')
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(200)
+      .expect(res => {
+        expect(res.body.properties[0].title).toNotBe(properties[1].title);
+      })
+      .end(done);
+  });
+
+  it('should not get own properties if not logged in', done => {
+    request(app)
+      .get('/myproperties')
+      .expect(401)
+      .expect(res => {
+        expect(res.body.properties).toNotExist();
+      })
+      .end(done);
+  });
+});
+
+// describe('GET /todos', () => {
+//   it('should get all todos', done => {
+//     request(app)
+//       .get('/todos')
+//       .set('x-auth', users[0].tokens[0].token)
+//       .expect(200)
+//       .expect(res => {
+//         expect(res.body.todos.length).toBe(1)
+//       })
+//       .end(done);
+//   });
+// });
 
 describe('GET /todos/:id', () => {
 

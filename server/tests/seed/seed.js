@@ -49,7 +49,8 @@ const properties = [
     "description": "nice location",
     "forRent": true,
     "forSale": false,
-    _id: new ObjectID(), _creator: userOneId
+    _id: new ObjectID(),
+    _creator: userOneId
   },
   {
     "title": "Property 2",
@@ -64,7 +65,8 @@ const properties = [
     "description": "on top of the hill",
     "forRent": true,
     "forSale": false,
-    _id: new ObjectID(), _creator: userTwoId
+    _id: new ObjectID(),
+    _creator: userTwoId
   }
 ];
 

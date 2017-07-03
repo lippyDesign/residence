@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 
 //////////////////////////////// SERVER ROUTES ///////////////////////////////////
 
-// POST RESIDENCES (Create new residence post)
+// POST /properties (Create new residence post)
 app.post('/properties', authenticate, async (req, res) => {
   try {
     const { title, address, price, beds, baths, sqft, built, lot, description, forRent, forSale } = req.body;
@@ -37,14 +37,38 @@ app.post('/properties', authenticate, async (req, res) => {
   }
 });
 
-// Get Todo
-app.get('/todos', authenticate, (req, res) => {
-  Todo.find({ _creator: req.user._id})
-    .then(todos => {
-      res.send({ todos });
-    })
-    .catch(error => res.status(400).send(error));
+// GET /properties (Find all properties)
+app.get('/properties', async (req, res) => {
+  try {
+    // find all properties
+    const properties = await Property.find({});
+    // send all properties to the client
+    res.send({ properties });
+  } catch(e) {
+    res.status(400).send(error)
+  }
 });
+
+// GET /myproperties (Find properties created by logged in user)
+app.get('/myproperties', authenticate, async (req, res) => {
+  try {
+    // find all properties created by the user
+    const properties = await Property.find({ _creator: req.user._id});
+    // send the user's properties to the client
+    res.send({ properties });
+  } catch(e) {
+    res.status(400).send(error);
+  }
+});
+
+// Get Todo
+// app.get('/todos', authenticate, (req, res) => {
+//   Todo.find({ _creator: req.user._id})
+//     .then(todos => {
+//       res.send({ todos });
+//     })
+//     .catch(error => res.status(400).send(error));
+// });
 
 // Get a particular Todo item
 app.get('/todos/:id', authenticate, (req, res) => {
