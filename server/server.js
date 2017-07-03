@@ -8,7 +8,7 @@ const { ObjectID } = require('mongodb');
 const { mongoose } = require('./db/mongoose');
 
 const { Todo } = require('./models/todo');
-const { Residence } = require('./models/residence');
+const { Property } = require('./models/property');
 const { User } = require('./models/user');
 const { authenticate } = require('./middleware/authenticate');
 const { geocodeAddress } = require('../utils/geocode');
@@ -20,13 +20,13 @@ app.use(bodyParser.json());
 //////////////////////////////// SERVER ROUTES ///////////////////////////////////
 
 // POST RESIDENCES (Create new residence post)
-app.post('/residences', authenticate, async (req, res) => {
+app.post('/properties', authenticate, async (req, res) => {
   try {
     const { title, address, price, beds, baths, sqft, built, lot, description, forRent, forSale } = req.body;
     // format the address and get coordinates
     const location = await geocodeAddress(address);
     // create residence object
-    const residence = new Residence({ title, price, beds, baths, sqft, built, lot, description, forRent, forSale,
+    const residence = new Property({ title, price, beds, baths, sqft, built, lot, description, forRent, forSale,
       address: location.formatted_address, lat: location.lat, long: location.long, _creator: req.user._id, postedOn:new Date().getTime() });
     // save residence into the database
     const doc = await residence.save();

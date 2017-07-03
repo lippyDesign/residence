@@ -4,58 +4,142 @@ const { ObjectID } = require('mongodb');
 
 const { app } = require('./../server');
 const { Todo } = require('../models/todo');
+const { Property } = require('../models/property');
 const { User } = require('../models/user');
-const { todos, users, populateTodos, populateUsers } = require('./seed/seed');
+const { todos, users, properties, populateProperties, populateTodos, populateUsers } = require('./seed/seed');
 
 beforeEach(populateUsers);
 beforeEach(populateTodos);
+beforeEach(populateProperties);
 
-describe('POST, todos', () => {
-
-  it('should create a new todo', done => {
-    const text = 'test todo text';
-
+describe('POST /properties', () => {
+  const property = {
+    title: "Single Property Home",
+    address: "455 7th St Oakland Ca",
+    price: 5000,
+    beds: 5,
+    baths: 3,
+    sqft: 3000,
+    built: 2010,
+    lot: 10000,
+    description: "Big house",
+    forRent: true,
+    forSale: false
+  };
+  it('should create a new property', done => {
     request(app)
-      .post('/todos')
+      .post('/properties')
       .set('x-auth', users[0].tokens[0].token)
-      .send({ text })
+      .send(property)
       .expect(200)
       .expect(res => {
-        expect(res.body.text).toBe(text);
+        expect(res.body.title).toBe(property.title)
+        expect(res.body.lat).toExist()
+        expect(res.body.long).toExist()
+        expect(res.body._id).toExist()
       })
       .end((err, res) => {
         if (err) return done(err);
 
-        Todo.find({text})
-          .then(todos => {
-            expect(todos.length).toBe(1);
-            expect(todos[0].text).toBe(text);
+        Property.find({ title: property.title })
+          .then(res => {
+            expect(res.length).toBe(1);
+            expect(res[0].description).toBe(property.description);
             done();
           })
           .catch(e => done(e));
-      })
+      });
   });
 
-  it('should not create todo with invalid body data', done => {
-    const text = '';
-
+  it(' should not create a new property if user not logged in', done => {
     request(app)
-      .post('/todos')
-      .set('x-auth', users[0].tokens[0].token)
-      .send({ text })
-      .expect(400)
+      .post('/properties')
+      .send(property)
+      .expect(401)
+      .expect(res => {
+        expect(res.body.title).toNotExist();
+      })
       .end((err, res) => {
         if (err) return done(err);
 
-        Todo.find()
-          .then(todos => {
-            expect(todos.length).toBe(2);
+        Property.find({})
+          .then(res => {
+            expect(res.length).toBe(2);
+            done();
+          })
+          .catch(e => done(e));
+      });
+  });
+
+  it(' should not create a new property if body incomplete', done => {
+    property.title = null
+    request(app)
+      .post('/properties')
+      .set('x-auth', users[0].tokens[0].token)
+      .send(property)
+      .expect(400)
+      .expect(res => {
+        expect(res.body.title).toNotExist();
+      })
+      .end((err, res) => {
+        if (err) return done(err);
+
+        Property.find({})
+          .then(res => {
+            expect(res.length).toBe(2);
             done();
           })
           .catch(e => done(e));
       });
   });
 });
+
+// describe('POST, todos', () => {
+
+//   it('should create a new todo', done => {
+//     const text = 'test todo text';
+
+//     request(app)
+//       .post('/todos')
+//       .set('x-auth', users[0].tokens[0].token)
+//       .send({ text })
+//       .expect(200)
+//       .expect(res => {
+//         expect(res.body.text).toBe(text);
+//       })
+//       .end((err, res) => {
+//         if (err) return done(err);
+
+//         Todo.find({text})
+//           .then(todos => {
+//             expect(todos.length).toBe(1);
+//             expect(todos[0].text).toBe(text);
+//             done();
+//           })
+//           .catch(e => done(e));
+//       })
+//   });
+
+//   it('should not create todo with invalid body data', done => {
+//     const text = '';
+
+//     request(app)
+//       .post('/todos')
+//       .set('x-auth', users[0].tokens[0].token)
+//       .send({ text })
+//       .expect(400)
+//       .end((err, res) => {
+//         if (err) return done(err);
+
+//         Todo.find()
+//           .then(todos => {
+//             expect(todos.length).toBe(2);
+//             done();
+//           })
+//           .catch(e => done(e));
+//       });
+//   });
+// });
 
 describe('GET /todos', () => {
   it('should get all todos', done => {

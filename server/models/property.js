@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const Residence = mongoose.model('Residence', {
+const Property = mongoose.model('property', {
   title: { type: String, required: true, minlength: 1, trim: true },
   address: { type: String, required: true, minlength: 1, trim: true },
   lat: { type: String, required: true },
@@ -19,4 +19,4 @@ const Residence = mongoose.model('Residence', {
   _creator: { type: mongoose.Schema.Types.ObjectId, required: true }
 });
 
-module.exports = { Residence };
+module.exports = { Property };
