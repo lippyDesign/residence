@@ -229,121 +229,92 @@ describe('DELETE /properies/:id', () => {
       .expect(404)
       .end(done);
   });
-
 });
 
-// describe('DELETE /todos/:id', () => {
+describe('PATCH /properties/:id', () => {
 
-//   it('should remove a todo', done => {
-//     const hexId = todos[1]._id.toHexString();
-
-//     request(app)
-//       .delete(`/todos/${hexId}`)
-//       .set('x-auth', users[1].tokens[0].token)
-//       .expect(200)
-//       .expect(res => {
-//         expect(res.body.todo._id).toBe(hexId);
-//       })
-//       .end((err, res) => {
-//         if (err) return done(err);
-//         //atempt to find the deleted item by id
-//         Todo.findById(hexId)
-//           .then(todo => {
-//             expect(todo).toNotExist();
-//             done();
-//           })
-//           .catch(e => done(e));
-//       });
-//   });
-
-//   it('should not remove a todo created by another user', done => {
-//     const hexId = todos[0]._id.toHexString();
-
-//     request(app)
-//       .delete(`/todos/${hexId}`)
-//       .set('x-auth', users[1].tokens[0].token)
-//       .expect(404)
-//       .end((err, res) => {
-//         if (err) return done(err);
-//         //atempt to find the deleted item by id
-//         Todo.findById(hexId)
-//           .then(todo => {
-//             expect(todo).toExist();
-//             done();
-//           })
-//           .catch(e => done(e));
-//       });
-//   });
-
-//   it('should return 404 if todo not found', done => {
-//     const hexId = new ObjectID().toHexString();
-//     request(app)
-//       .delete(`/todos/${hexId} + 1`)
-//       .set('x-auth', users[1].tokens[0].token)
-//       .expect(404)
-//       .end(done)
-//   });
-
-//   it('should return 404 if object id is invalid', done => {
-//     request(app)
-//       .delete('/todos/123abc')
-//       .set('x-auth', users[1].tokens[0].token)
-//       .expect(404)
-//       .end(done);
-//   });
-
-// });
-
-describe('PATCH /todos/:id', () => {
-
-  it('should update the todo', done => {
+  it('should update the property', done => {
+    const property = properties[0];
     // grab id of first item
-    const hexId = todos[0]._id.toHexString();
-    const text = 'Hello New Text';
-    // update text and set completed equal true
+    const hexId = property._id.toHexString();
+    const title = 'Hello New Title';
+    property.title = title;
     request(app)
-      .patch(`/todos/${hexId}`)
+      .patch(`/properties/${hexId}`)
       .set('x-auth', users[0].tokens[0].token)
-      .send({ completed: true, text })
+      .send(property)
       .expect(200)
       .expect(res => {
-        expect(res.body.todo.text).toBe(text);
-        expect(res.body.todo.completed).toBe(true);
-        expect(res.body.todo.completedAt).toBeA('number');
+        expect(res.body.property.title).toBe(title);
       })
       .end(done)
-  })
+  });
 
-  it('should not update the todo created by another user', done => {
+  it('should not update the property created by another user', done => {
+    const property = properties[0];
     // grab id of first item
-    const hexId = todos[0]._id.toHexString();
-    const text = 'Hello New Text';
-    
+    const hexId = property._id.toHexString();
+    const title = 'Hello New Title';
+    property.title = title;
     request(app)
-      .patch(`/todos/${hexId}`)
+      .patch(`/properties/${hexId}`)
       .set('x-auth', users[1].tokens[0].token)
-      .send({ completed: true, text })
+      .send(property)
       .expect(404)
       .end(done)
-  })
-
-  it('should clear completedAt when todo is not completed', done => {
-    const hexId = todos[1]._id.toHexString();
-    const obj = { text:'Goodby New Text', completed: false };
-    request(app)
-      .patch(`/todos/${hexId}`)
-      .set('x-auth', users[1].tokens[0].token)
-      .send(obj)
-      .expect(200)
-      .expect(res => {
-        expect(res.body.todo.text).toBe(obj.text);
-        expect(res.body.todo.completed).toBe(obj.completed);
-        expect(res.body.todo.completedAt).toNotExist();
-      })
-      .end(done)
-  })
-
+  });
 });
+
+// describe('PATCH /todos/:id', () => {
+
+//   it('should update the todo', done => {
+//     // grab id of first item
+//     const hexId = todos[0]._id.toHexString();
+//     const text = 'Hello New Text';
+//     // update text and set completed equal true
+//     request(app)
+//       .patch(`/todos/${hexId}`)
+//       .set('x-auth', users[0].tokens[0].token)
+//       .send({ completed: true, text })
+//       .expect(200)
+//       .expect(res => {
+//         expect(res.body.todo.text).toBe(text);
+//         expect(res.body.todo.completed).toBe(true);
+//         expect(res.body.todo.completedAt).toBeA('number');
+//       })
+//       .end(done)
+//   })
+
+//   it('should not update the todo created by another user', done => {
+//     // grab id of first item
+//     const hexId = todos[0]._id.toHexString();
+//     const text = 'Hello New Text';
+    
+//     request(app)
+//       .patch(`/todos/${hexId}`)
+//       .set('x-auth', users[1].tokens[0].token)
+//       .send({ completed: true, text })
+//       .expect(404)
+//       .end(done)
+//   })
+
+//   it('should clear completedAt when todo is not completed', done => {
+//     const hexId = todos[1]._id.toHexString();
+//     const obj = { text:'Goodby New Text', completed: false };
+//     request(app)
+//       .patch(`/todos/${hexId}`)
+//       .set('x-auth', users[1].tokens[0].token)
+//       .send(obj)
+//       .expect(200)
+//       .expect(res => {
+//         expect(res.body.todo.text).toBe(obj.text);
+//         expect(res.body.todo.completed).toBe(obj.completed);
+//         expect(res.body.todo.completedAt).toNotExist();
+//       })
+//       .end(done)
+//   })
+
+// });
 
 describe('GET /users/me', () => {
 

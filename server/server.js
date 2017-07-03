@@ -88,7 +88,7 @@ app.delete('/properties/:id', authenticate, async (req, res) => {
   try {
     // find property by the given id and the one that was created by the user
     const property = await Property.findOneAndRemove({ _id: id, _creator: req.user._id });
-    // if property with the given id doesn't exist, send not found
+    // if property with the given id doesn't exist, return early and send not found
     if (!property) return res.status(404).send();
     // if property was found, delete it and send it to the client
     res.send({ property });
@@ -97,28 +97,31 @@ app.delete('/properties/:id', authenticate, async (req, res) => {
   }
 });
 
-// Update todo records
-app.patch('/todos/:id', authenticate, (req, res) => {
+// PATCH properties/:id (Update a property by id)
+app.patch('/properties/:id', authenticate, async (req, res) => {
+  // pill property id off the req.params
   const { id } = req.params;
+  // early return (not found) if id is not a valid id
+  if (!ObjectID.isValid(id)) return res.status(404).send();
   // undersor's pick method takes an object to pick properties off of
   // and an array of properties we need to pick off
-  const body = _.pick(req.body, ['text', 'completed']);
-
-  if (!ObjectID.isValid(id)) return resizeBy.send(404).send();
-
-  if (_.isBoolean(body.completed) && body.completed) {
-    body.completedAt = new Date().getTime();
-  } else {
-    body.completed = false;
-    body.completedAt = null;
+  let body = _.pick(req.body, ['title', 'address', 'price', 'beds', 'baths', 'sqft', 'built', 'lot', 'description', 'forRent', 'forSale']);
+  // format the address and get coordinates
+  const location = await geocodeAddress(body.address);
+  // set the formattes address and the coordinates onto the body object
+  body.long = location.long;
+  body.address = location.formatted_address;
+  body.lat = location.lat;
+  try {
+    // update property by id and created by the logged in user
+    const property = await Property.findOneAndUpdate({_id: id, _creator: req.user._id}, { $set: body }, { new: true });
+    // if property with the given id doesn't exist, return early and send not found
+    if (!property) return res.status(404).send();
+    // if property was found, send updated property to the client
+    res.send({ property });
+  } catch(e) {
+    res.status(400).send();
   }
-
-  Todo.findOneAndUpdate({_id: id, _creator: req.user._id}, { $set: body }, { new: true })
-    .then(todo => {
-      if (!todo) return res.status(404).send();
-      res.send({ todo });
-    })
-    .catch(e => res.status(400).send());
 });
 
 // Create a new User
